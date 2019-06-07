@@ -183,13 +183,14 @@ int main(int argc, char ** argv)
                 // adios team later.                
                 if (!ev.valid() || ev.pid() > 1000000 || (int)ev.rid() != world_rank || ev.tid() >= 1000000)
                 {
-                    ; // do nothing
+                    std::cerr << "\n***** Invalid event *****\n";
+                    std::cerr << ev << std::endl;
                 }
                 else 
                 {
                     if (event->addEvent(ev) == EventError::CallStackViolation)
                     {
-			; // do nothing
+			            ; // do nothing
                         //std::cerr << "\n***** Call stack violation *****\n";
                         // ignore this particular event.
                         // it will possibly keep rasing call stack violation error.

@@ -3,6 +3,7 @@
 #include "chimbuko/ad/ADEvent.hpp"
 #include "chimbuko/util/DispatchQueue.hpp"
 #include <fstream>
+#include <iostream>
 #include <curl/curl.h>
 
 namespace chimbuko {

@@ -1,4 +1,5 @@
 #include "chimbuko/ad/ADEvent.hpp"
+#include "chimbuko/ad/ExecData.hpp"
 #include <iostream>
 
 using namespace chimbuko;
@@ -74,11 +75,6 @@ EventError ADEvent::addFunc(const Event_t& event) {
         return EventError::UnknownFunc;
     }
 
-    //if ( m_funcMap->find(event.fid())->second.find("adios2") != std::string::npos ) {
-    //    std::cerr << "Skip: " << m_funcMap->find(event.fid())->second << std::endl;
-    //    return EventError::OK;
-    //}
-
     this->createCallStack(event.pid(), event.rid(), event.tid());
     this->createCallList(event.pid(), event.rid(), event.tid());
     this->createCommStack(event.pid(), event.rid(), event.tid());
@@ -92,10 +88,14 @@ EventError ADEvent::addFunc(const Event_t& event) {
 
         CallListIterator_t it = std::prev(cl.end());
         CallStack_t& cs = m_callStack[event.pid()][event.rid()][event.tid()];
+
+        // TODO: change to support iterator
         if (cs.size()) {
-            it->set_parent(cs.top()->get_id());
-            cs.top()->add_child(it->get_id());
+            it->set_parent(cs.top());
+            cs.top()->add_child(it);
+            //cs.top()->add_child(it->get_id());
         }
+
         it->set_funcname(m_funcMap->find(event.fid())->second);
         cs.push(it);
 
@@ -105,20 +105,20 @@ EventError ADEvent::addFunc(const Event_t& event) {
     {
         CallStack_t& cs = m_callStack[event.pid()][event.rid()][event.tid()];
         if (cs.size() == 0) {
-            //std::cerr << "\n***** Empty call stack! *****\n" << std::endl;
-            //std::cerr << event << ": "
-	//	      << m_eventType->find(event.eid())->second << ": "
-	//	      << m_funcMap->find(event.fid())->second << std::endl;
-            return EventError::CallStackViolation;
+            std::cerr << "\n***** Empty call stack! *****\n" << std::endl;
+            std::cerr << event << ": "
+		      << m_eventType->find(event.eid())->second << ": "
+		      << m_funcMap->find(event.fid())->second << std::endl;
+            return EventError::EmptyCallStack;
         }
 
         CallListIterator_t& it = cs.top();
         if (!it->update_exit(event)) {
-            //std::cerr << "\n***** Invalid EXIT event! *****\n" << std::endl;
-            //std::cerr << event << ": "
-            //          << m_eventType->find(event.eid())->second << ": "
-            //          << m_funcMap->find(event.fid())->second << std::endl;
-            //std::cerr << *it << std::endl;
+            std::cerr << "\n***** Call stack violation! *****\n" << std::endl;
+            std::cerr << event << ": "
+                     << m_eventType->find(event.eid())->second << ": "
+                     << m_funcMap->find(event.fid())->second << std::endl;
+            std::cerr << *it << std::endl;
             // while (!cs.empty()) {
             //     std::cerr << *cs.top() << std::endl;
             //     cs.pop();

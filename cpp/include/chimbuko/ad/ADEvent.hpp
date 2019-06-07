@@ -1,6 +1,5 @@
 #pragma once
 #include "chimbuko/ad/ADDefine.hpp"
-#include "chimbuko/ad/ExecData.hpp"
 #include <string>
 #include <vector>
 #include <list>
@@ -8,6 +7,11 @@
 #include <unordered_map>
 
 namespace chimbuko {
+
+// forward declaration
+class Event_t;
+class ExecData_t;
+class CommData_t;
 
 typedef std::stack<CommData_t> CommStack_t;
 typedef std::unordered_map<unsigned long, CommStack_t>      CommStackMap_t_t;
@@ -28,7 +32,6 @@ typedef std::unordered_map<unsigned long, CallStackMap_r_t> CallStackMap_p_t;
 typedef std::unordered_map<unsigned long, std::vector<CallListIterator_t>> ExecDataMap_t;
 
 class ADEvent {
-
 public:
     ADEvent();
     ~ADEvent();
@@ -59,9 +62,13 @@ private:
     const std::unordered_map<int, std::string> *m_funcMap;
     const std::unordered_map<int, std::string> *m_eventType;
 
+    // stack of communication events
     CommStackMap_p_t  m_commStack;
+    // call stack of function events
     CallStackMap_p_t  m_callStack;
+    // list of function events (container)
     CallListMap_p_t   m_callList;
+    // map of execution data (this will be refreshed every frame in trimCallList())
     ExecDataMap_t     m_execDataMap;
 };
 

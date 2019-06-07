@@ -53,7 +53,7 @@ protected:
             exec.set_funcname(fid + "_funcname");
 
             for (unsigned long i = 0; i < 5; i++) {
-                exec.add_child(fid + "_child_" + std::to_string(i));
+                //exec.add_child(fid + "_child_" + std::to_string(i));
 
                 unsigned long comm_d[] = {0, rid, 0, ts%(N_EVENT+2), ts%N_TAGS, (i+rid)%world_size, 10+i*1024, ts+1+i};
                 Event_t comm_ev(comm_d, EventDataType::COMM, COMM_IDX_TS);
@@ -62,7 +62,7 @@ protected:
                 );
             }
 
-            if (ts%PARENT_STEP == 0) exec.set_parent(fid + "_parent");
+            // if (ts%PARENT_STEP == 0) exec.set_parent(fid + "_parent");
             if (ts%LABEL_STEP == 0) exec.set_label(-1);
 
             (*callList)[0][world_rank][0].push_back(exec);

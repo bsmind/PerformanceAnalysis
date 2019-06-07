@@ -1,5 +1,6 @@
 #pragma once
 #include "chimbuko/ad/ADDefine.hpp"
+#include "chimbuko/ad/ADEvent.hpp"
 #include <iostream>
 #include <string>
 #include <vector>
@@ -99,8 +100,9 @@ public:
     unsigned long get_exit() const { return m_exit; }
     unsigned long get_runtime() const { return m_runtime; }
     int get_label() const { return m_label; }
-    std::string get_parent() const { return m_parent; }
-    const std::vector<std::string>& get_children() const { return m_children; }
+    //std::string get_parent() const { return m_parent; }
+    std::string get_parent() const;
+    const std::vector<CallListIterator_t>& get_children() const { return m_children; }
     const std::vector<CommData_t>& get_message() const { return m_messages; }
 
     size_t get_n_message() const { return m_messages.size(); }
@@ -109,11 +111,11 @@ public:
     bool is_used() const { return m_used; }
 
     void set_label(int label) { m_label = label; }
-    void set_parent(std::string parent) { m_parent = parent; }
+    void set_parent(CallListIterator_t parent) { m_parent = parent; }
     void set_funcname(std::string funcname) { m_funcname = funcname; }
 
     bool update_exit(const Event_t& ev);
-    void add_child(std::string child);
+    void add_child(CallListIterator_t child);
     bool add_message(const CommData_t& comm);
 
     void set_use(bool use) { m_used = use; }
@@ -130,8 +132,15 @@ private:
     unsigned long m_pid, m_tid, m_rid, m_fid;
     unsigned long m_entry, m_exit, m_runtime;
     int m_label;
-    std::string m_parent;
-    std::vector<std::string> m_children;
+
+    // TODO: change to iterator!!!
+    CallListIterator_t m_parent;
+    std::vector<CallListIterator_t> m_children;
+    // CallListIterator_t m_parent
+    // std::vector<CallListIterator_t> m_children;
+    //std::string m_parent;
+    //std::vector<std::string> m_children;
+    
     std::vector<CommData_t> m_messages;
 
     bool m_is_binary;

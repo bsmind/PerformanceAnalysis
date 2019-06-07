@@ -2,16 +2,19 @@
 
 using namespace chimbuko;
 
+CallList_t ROOTLIST;
+CallListIterator_t ROOT = ROOTLIST.begin();
+
 /* ---------------------------------------------------------------------------
  * Implementation of ExecData_t class
  * --------------------------------------------------------------------------- */
 ExecData_t::ExecData_t()
-    : m_runtime(MAX_RUNTIME), m_label(1), m_parent("-1"), m_is_binary(false), m_used(false)
+    : m_runtime(MAX_RUNTIME), m_label(1), m_parent(ROOT), m_is_binary(false), m_used(false)
 {
 
 }
 ExecData_t::ExecData_t(const Event_t& ev) 
-    : m_runtime(MAX_RUNTIME), m_label(1), m_parent("-1"), m_is_binary(false), m_used(false)
+    : m_runtime(MAX_RUNTIME), m_label(1), m_parent(ROOT), m_is_binary(false), m_used(false)
 {
     m_id = ev.id();
     m_pid = ev.pid();
@@ -25,6 +28,11 @@ ExecData_t::~ExecData_t() {
 
 }
 
+std::string ExecData_t::get_parent() const {
+    if (m_parent == ROOT) return "root";
+    return m_parent->get_id();
+}
+
 bool ExecData_t::update_exit(const Event_t& ev)
 {
     if (m_fid != ev.fid() || m_entry > ev.ts())
@@ -34,7 +42,7 @@ bool ExecData_t::update_exit(const Event_t& ev)
     return true;
 }
 
-void ExecData_t::add_child(std::string child)
+void ExecData_t::add_child(CallListIterator_t child)
 {
     m_children.push_back(child);
 }
@@ -72,7 +80,7 @@ bool ExecData_t::is_same(const ExecData_t& other) const {
     return true;
 }
 
-static void write_str(std::ostream& os, std::string& str) {
+static void write_str(std::ostream& os, std::string str) {
     // std::cout << str << ", " << str.size() << std::endl;
     size_t len = str.size();
     os.write((const char*)&len, sizeof(size_t));
@@ -116,11 +124,14 @@ std::ostream& chimbuko::operator<<(std::ostream& os, ExecData_t& exec)
         write_num<unsigned long>(os, exec.m_exit);
         write_num<unsigned long>(os, exec.m_runtime);
         write_num<int>(os, exec.m_label);
-        write_str(os, exec.m_parent);
+        if (exec.m_parent == ROOT)
+            write_str(os, "root");
+        else
+            write_str(os, exec.m_parent->get_id());
 
         write_num<size_t>(os, exec.m_children.size());
         for (auto c: exec.m_children) { 
-            write_str(os, c);
+            write_str(os, c->get_id());
         }
 
         write_num<size_t>(os, exec.m_messages.size());
@@ -135,13 +146,13 @@ std::ostream& chimbuko::operator<<(std::ostream& os, ExecData_t& exec)
             << "\npid: " << exec.m_pid << ", rid: " << exec.m_rid << ", tid: " << exec.m_tid
             << "\nfid: " << exec.m_fid << ", name: " << exec.m_funcname << ", label: " << exec.m_label 
             << "\nentry: " << exec.m_entry << ", exit: " << exec.m_exit << ", runtime: " << exec.m_runtime
-            << "\nparent: " << exec.m_parent << ", # children: " << exec.m_children.size() 
+            << "\nparent: " << exec.m_parent->get_id() << ", # children: " << exec.m_children.size() 
             << ", # messages: " << exec.m_messages.size();
 
         if (exec.m_children.size()) {
             os << "\nChildren: ";
             for (auto c: exec.m_children)
-                os << c << ", ";
+                os << c->get_id() << ", ";
         }
         if (exec.m_messages.size()) {
             os << "\nMessage: \n";
@@ -165,13 +176,15 @@ std::istream& chimbuko::operator>>(std::istream& is, ExecData_t& exec)
         exec.m_exit = read_num<unsigned long>(is);
         exec.m_runtime = read_num<unsigned long>(is);
         exec.m_label = read_num<int>(is);
-        exec.m_parent = read_str(is);
+        // TODO: how to recover parent??
+        read_str(is);
+        //exec.m_parent = read_str(is);
 
         size_t n_children = read_num<size_t>(is);
         exec.m_children.resize(n_children);
-        for (size_t i = 0; i < n_children; i++) {
-            exec.m_children[i] = read_str(is);
-        }
+        // for (size_t i = 0; i < n_children; i++) {
+        //     exec.m_children[i] = read_str(is);
+        // }
 
         size_t n_msg = read_num<size_t>(is);
         exec.m_messages.resize(n_msg);
