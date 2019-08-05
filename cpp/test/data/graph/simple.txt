@@ -1,0 +1,45 @@
+# test simple call stack graph
+# comment starts with '#' character
+# Node must be first presented before edge!
+
+# node (function): key function name
+# - key: unitque key for each function, "-1" reserved for ROOT
+BEGIN_NODE
+0 A
+1 B
+2 C
+3 A1
+4 A2
+5 A3
+6 B1 
+7 B2
+8 C1
+9 C2
+10 BB1
+11 BB2
+END_NODE
+
+# graph: depth-first
+# - edge: parent, myself [, mean, standard deviation]
+BEGIN_EDGE
+ROOT A
+A A1 100 10
+A A2
+A2 B1 200 10
+A2 B2
+B2 BB1 200 10
+B2 BB2 200 20
+A A3 300 30
+ROOT B
+B B1 200 10
+B B2 
+B2 BB1 200 10
+B2 BB2 200 20
+ROOT C
+C C1
+C1 B1 400 40
+C1 B2 
+B2 BB1 400 10
+B2 BB2 400 20
+C C2 150 15
+END_EDGE

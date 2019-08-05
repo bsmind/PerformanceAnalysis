@@ -31,22 +31,18 @@ int main(int argc, char ** argv)
         std::string inputFile = "tau-metrics-" + std::to_string(world_rank) + ".bp";
         std::string output_dir = argv[3]; //output directory
         std::string addr;
-#ifdef _USE_ZMQNET
         if (argc == 5)
             addr = std::string(argv[4]); // (e.g. "tcp://hostname:5559")
-#endif
 
         if (world_rank == 0) {
-        std::cout << "\n" 
-                << "rank       : " << world_rank << "\n"
-                << "Engine     : " << engineType << "\n"
-                << "BP in dir  : " << data_dir << "\n"
-                << "BP file    : " << inputFile << "\n"
-                << "BP out dir : " << output_dir 
-#ifdef _USE_ZMQNET
-                << "\nPS Addr    : " << addr
-#endif
-                << std::endl;
+            std::cout << "\n" 
+                    << "rank       : " << world_rank << "\n"
+                    << "Engine     : " << engineType << "\n"
+                    << "BP in dir  : " << data_dir << "\n"
+                    << "BP file    : " << inputFile << "\n"
+                    << "BP out dir : " << output_dir << "\n"
+                    << "PS Addr    : " << addr
+                    << std::endl;
         }
 
         double sigma = 6.0;
@@ -54,10 +50,12 @@ int main(int argc, char ** argv)
         // -----------------------------------------------------------------------
         // AD module variables
         // -----------------------------------------------------------------------
-        ADParser * parser;
-        ADEvent * event;
-        ADOutlierSSTD * outlier;
-        ADio * io;
+        OnlineAD * ad;
+
+        //ADParser * parser;
+        //ADEvent * event;
+        //ADOutlierSSTD * outlier;
+        //ADio * io;
 
         int step = 0; 
         size_t idx_funcData = 0, idx_commData = 0;
@@ -79,6 +77,10 @@ int main(int argc, char ** argv)
         // Init. AD module
         // First, init io to make sure file (or connection) handler
         // -----------------------------------------------------------------------
+        ad = new OnlineAD(world_rank);
+        ad->init_io(
+            
+        )
         io = new ADio();
         io->setDispatcher();
         io->setHeader({{"rank", world_rank}, {"algorithm", 0}, {"nparam", 1}, {"winsz", 0}});
@@ -265,12 +267,12 @@ int main(int argc, char ** argv)
         // -----------------------------------------------------------------------
         // Finalize
         // -----------------------------------------------------------------------
-        outlier->disconnect_ps();
+        //outlier->disconnect_ps();
 
-        delete parser;
-        delete event;
-        delete outlier;
-        delete io;
+        //delete parser;
+        //delete event;
+        //delete outlier;
+        //delete io;
     }
     catch (std::invalid_argument &e)
     {
